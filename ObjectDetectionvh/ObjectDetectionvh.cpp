@@ -5,6 +5,10 @@
 #include <iostream>
 #include "opencv2/highgui/highgui.hpp"
 #include "opencv2/imgproc/imgproc.hpp"
+#include <iostream>
+#include <Windows.h>
+#include <iomanip>
+
 
 using namespace cv;
 using namespace std;
@@ -12,6 +16,7 @@ using namespace std;
 
 int *getCoordinates();
 void filterFrame();
+void mappingCurser(int currentPosX, int currentPosY);
 
 
 int transformedPosition[4];
@@ -78,7 +83,7 @@ int *getCoordinates() {
 	int position[2];
 	bool detection = false;
 
-	VideoCapture cap(0); //capture the video from web cam
+	VideoCapture cap(1); //capture the video from web cam
 
 	if (!cap.isOpened())  // if not success, exit program
 	{
@@ -148,7 +153,7 @@ int *getCoordinates() {
 			int posX = dM10 / dArea;
 			int posY = dM01 / dArea;
 
-			cout << "Pink color object detected.\n";
+			//cout << "Pink color object detected.\n";
 			
 			if (dArea > 100000 ){
 				position[0] = posX;
@@ -217,7 +222,7 @@ void filterFrame() {
 	int position[2];
 
 
-	VideoCapture cap(0); //capture the video from web cam
+	VideoCapture cap(1); //capture the video from web cam
 	if (!cap.isOpened())  // if not success, exit program
 	{
 		cout << "Cannot open the web cam. Or connect a web cam" << endl;
@@ -273,18 +278,67 @@ void filterFrame() {
 			//cout << "Pink color object detected.\n";
 
 			if (dArea > 100000) {
+
 				position[0] = posX;
 				position[1] = posY;
 
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+				//Here goes the function to get the Mapped positions with the presentation slides
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+				
+
+
+
+
+				INPUT ip;
+				ip.type = INPUT_KEYBOARD;
+				ip.ki.wScan = 0; // hardware scan code for key
+				ip.ki.time = 0;
+				ip.ki.dwExtraInfo = 0;
+
+				INPUT Input = { 0 };  //For mouse input
+
 				if ((posX >= transformedPosition[0] && posX <= transformedPosition[1]) && (posY <= transformedPosition[2] && posY >= transformedPosition[3])) {
 					cout << "Inside the filter" << "\n";
+					//If inside the filter start writing
+
+					
+					// Press the "A" key
+					ip.ki.wVk = 0x11; // virtual-key code for the "ctrl" key
+					ip.ki.dwFlags = 0; // 0 for key press
+					SendInput(1, &ip, sizeof(INPUT));
+
+					ip.ki.wVk = 0x50; // virtual-key code for the "ctrl" key
+					ip.ki.dwFlags = 0; // 0 for key press
+					SendInput(1, &ip, sizeof(INPUT));
+
+					ip.ki.dwFlags = KEYEVENTF_KEYUP; // KEYEVENTF_KEYUP for key release
+					SendInput(1, &ip, sizeof(INPUT));
+		
+					// left down 
+					Input.type = INPUT_MOUSE;
+					Input.mi.dwFlags = MOUSEEVENTF_LEFTDOWN;
+					SendInput(1, &Input, sizeof(INPUT));	
+
+					SetCursorPos(posX, posY);
 				}
 				else {
-
 					cout << "Not inside" << "\n";
 				}
-
 				
+				//Mouse release - left up
+				ZeroMemory(&Input, sizeof(INPUT));
+				Input.type = INPUT_MOUSE;
+				Input.mi.dwFlags = MOUSEEVENTF_LEFTUP;
+				SendInput(1, &Input, sizeof(INPUT));
+
+				//Press Esc to quit from pen
+				ip.ki.wVk = 0x1B; // virtual-key code for the "Esc" key
+				ip.ki.dwFlags = 0; // 0 for key press
+				SendInput(1, &ip, sizeof(INPUT));
+
+				ip.ki.dwFlags = KEYEVENTF_KEYUP; // KEYEVENTF_KEYUP for key release
+				SendInput(1, &ip, sizeof(INPUT));				
 			}
 
 
@@ -302,3 +356,19 @@ void filterFrame() {
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void mappingCurser(int currentPosX, int currentPosY) {
+	int posX1, posX2, posY1, posY2;
+
+	posX1 = transformedPosition[0];
+	posX2 = transformedPosition[1];
+	posY1 = transformedPosition[2];
+	posY2 = transformedPosition[3];
+
+	//Default resolution of the screen  1366x768
+
+
+
+
+
+}
