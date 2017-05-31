@@ -8,6 +8,7 @@
 #include <iostream>
 #include <Windows.h>
 #include <iomanip>
+#include <math.h>
 
 
 using namespace cv;
@@ -58,12 +59,12 @@ int main(int argc, char** argv)
 	int yn2 = (readPosition[1][1] + readPosition[2][1]) / 2;
 
 	/*
-
-	yn1  *****
-	yn2	 *****
-		xn1	xn2
-	
+	yn1	 ******
+	     ******
+	yn2	 ******
+		xn1	 xn2	
 	*/
+
 	transformedPosition[0] = xn1;
 	transformedPosition[1] = xn2;
 	transformedPosition[2] = yn1;
@@ -76,7 +77,6 @@ int main(int argc, char** argv)
 	return 0;
 
 }
-
 
 int *getCoordinates() {
 
@@ -276,9 +276,7 @@ void filterFrame() {
 			int posY = dM01 / dArea;
 
 			//cout << "Pink color object detected.\n";
-
 			if (dArea > 100000) {
-
 				position[0] = posX;
 				position[1] = posY;
 
@@ -286,8 +284,6 @@ void filterFrame() {
 				//Here goes the function to get the Mapped positions with the presentation slides
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 				
-
-
 
 
 				INPUT ip;
@@ -341,16 +337,12 @@ void filterFrame() {
 				SendInput(1, &ip, sizeof(INPUT));				
 			}
 
-
-
 			if (waitKey(30) == 27) //wait for 'esc' key press for 30ms. If 'esc' key is pressed, break loop
 			{
 				cout << "esc key is pressed by user" << endl;
 				break;
 			}
 		}
-
-
 	}
 	return;
 }
@@ -358,14 +350,55 @@ void filterFrame() {
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void mappingCurser(int currentPosX, int currentPosY) {
-	int posX1, posX2, posY1, posY2;
+	int posX1, posY1, posX2, posY2, posX3, posY3, posX4, posY4;
 
-	posX1 = transformedPosition[0];
-	posX2 = transformedPosition[1];
-	posY1 = transformedPosition[2];
-	posY2 = transformedPosition[3];
+	posX1 = readPosition[0][0];
+	posY1 = readPosition[0][1];
+
+	posX2 = readPosition[1][0];
+	posY2 = readPosition[1][1];
+
+	posX3 = readPosition[2][0];
+	posY3 = readPosition[2][1];
+
+	posX4 = readPosition[3][0];
+	posY4 = readPosition[3][1];
 
 	//Default resolution of the screen  1366x768
+	int absoluteX, absoluteY;
+
+	if (posX1 < posX3) {
+
+		int perpendicularHeight1 = posY3 - posY1;
+		int baseLength1 = posX3 - posX1;
+		int diagonalLength1 = sqrt(pow(perpendicularHeight1, 2) + pow(baseLength1, 2));
+		int triangleH1 = currentPosY - posY1;
+		int foundZ1 = (triangleH1*diagonalLength1) / perpendicularHeight1;
+
+		absoluteY = (foundZ1 * 768) / diagonalLength1;
+
+		if (posY1 > posY2) {
+			int perpendicularHeight2 = posY1 - posY2;
+			int baseLength2 = posX2 - posX1;
+			int diagonalLength2 = sqrt(pow(perpendicularHeight2, 2) + pow(baseLength2, 2));
+			int triangleB1 = posX2 - currentPosX;
+			int foundZ2 = (triangleB1*diagonalLength2) / baseLength2;
+
+			absoluteX = (foundZ2 * 1366) / diagonalLength2;
+		}
+		else {
+			int perpendicularHeight3 = posY2 - posY1;
+			int baseLength3 = posX2 - posX1;
+			int diagonalLength3 = sqrt(pow(perpendicularHeight3, 2) + pow(baseLength3, 2));
+			int triangleB2 = currentPosX - posX1;
+			int foundZ3 = (triangleB2*diagonalLength3) / baseLength3;
+
+			absoluteX = (foundZ3 * 1366) / diagonalLength3;			
+		}
+	}else{
+
+	}
+
 
 
 
